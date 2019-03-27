@@ -43,6 +43,7 @@ feature -- game_status
 	game_started: BOOLEAN
 	did_give_up: BOOLEAN -- status if user did give up before
 	game_iteration_before: INTEGER
+	has_fired: BOOLEAN
 
 feature -- score_keeping
 	grand_total_score: INTEGER
@@ -97,11 +98,17 @@ feature -- model updates
 			i := i + 1
 		end
 
+	set_fired
+		do
+			has_fired := True
+		end
+
 feature -- model operations
 	reset
 			-- Reset model state.
 		do
 			game_iteration := 0
+			has_fired := False
 			grand_total_score := 0
 			cumulative_score := 0
 			create board.make_empty
@@ -133,7 +140,7 @@ feature -- model operations
 
 				cumulative_score := cumulative_score + board.player.score
 
-				board.make_custom_level (ships, gen, dimension, max_shots, num_bombs)
+				board.make_custom_level (ships, gen, dimension, max_shots, num_bombs, debug_mode)
 
 				if debug_mode = True then
 					board.show_ships

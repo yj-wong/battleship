@@ -15,14 +15,13 @@ feature -- command
 	undo
     	do
 			-- perform some update on the model state
---			model.undo
 			if model.history.after then
 				model.history.back
 			end
 
 			if model.history.on_item and model.game_started = True then
 				model.history.item.undo
-				model.set_state_message (model.history.state)
+				model.set_state_message (model.history.state - 1)
 				model.history.back
 			elseif model.game_started = False then
 				model.reset_game_message

@@ -25,7 +25,7 @@ feature -- command
 			-- redo
 			if model.history.on_item and model.game_started = True then
 				model.history.item.redo
-				model.set_state_message (model.history.state + 1)
+				model.set_state_message (model.history.state)
 			elseif model.game_started = False then
 				model.reset_game_message
 				model.e.append ("Nothing to redo")

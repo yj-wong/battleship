@@ -53,23 +53,17 @@ feature -- commands
 feature -- {NONE} helpers
 	bomb
 		do
-			model.reset_game_message
-
 			if not model.board.player.has_bombs then
 				model.set_e ("No bombs remaining")
-				model.set_s1 ("Keep Firing!")
 
 			elseif not coordinate1.adjacent_to (coordinate2) then
 				model.set_e ("Bomb coordinates must be adjacent")
-				model.set_s1 ("Keep Firing!")
 
 			elseif model.board.coordinate_status (coordinate1) = 0 or model.board.coordinate_status (coordinate2) = 0 then
 				model.set_e ("Invalid coordinate")
-				model.set_s1 ("Fire Away!")
 
 			elseif model.board.coordinate_status (coordinate1) = 2 or model.board.coordinate_status (coordinate2) = 2 then
 				model.set_e ("Already fired there")
-				model.set_s1 ("Keep Firing!")
 
 			elseif model.board.coordinate_status (coordinate1) = 1 or model.board.coordinate_status (coordinate2) = 1 then
 				model.board.player.use_bomb
@@ -80,16 +74,12 @@ feature -- {NONE} helpers
 
 				if model.board.fire_status (coordinate1) = 0 and model.board.fire_status (coordinate2) = 0 then
 					model.set_s2 ("Miss! ")
-					model.set_s1 ("Keep Firing!")
 				elseif model.board.fire_status (coordinate1) = 1 or model.board.fire_status (coordinate2) = 1 then
 					model.set_s2 ("Hit! ")
-					model.set_s1 ("Keep Firing!")
 				elseif model.board.fire_status (coordinate1) = 2 and model.board.fire_status (coordinate2) /= 2 then
 					model.set_s2 (model.board.ship_list.find_ship (coordinate1).ship_size.out+"x1 ship sunk! ")
-					model.set_s1 ("Keep Firing!")
 				elseif model.board.fire_status (coordinate2) = 2 and model.board.fire_status (coordinate1) /= 2 then
 					model.set_s2 (model.board.ship_list.find_ship (coordinate2).ship_size.out+"x1 ship sunk! ")
-					model.set_s1 ("Keep Firing!")
 				elseif model.board.fire_status (coordinate1) = 2 and model.board.fire_status (coordinate2) = 2 then
 					if model.board.ship_list.find_ship (coordinate1).ship_size = model.board.ship_list.find_ship (coordinate2).ship_size then
 						model.set_s2 (model.board.ship_list.find_ship (coordinate1).ship_size.out+"x1 ship sunk! ")
@@ -97,9 +87,13 @@ feature -- {NONE} helpers
 						model.set_s2 (model.board.ship_list.find_ship (coordinate1).ship_size.out+"x1 and "+
 							model.board.ship_list.find_ship (coordinate2).ship_size.out+"x1 ships sunk! ")
 					end
-
-					model.set_s1 ("Keep Firing!")
 				end
+				model.set_fired
+			end
+			if model.has_fired = True then
+				model.set_s1 ("Keep Firing!")
+			else
+				model.set_s1 ("Fire Away")
 			end
 
 			model.check_game_status

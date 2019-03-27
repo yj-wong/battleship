@@ -71,12 +71,13 @@ feature --contructors
 			create player.make_level (a_level, ship_list.total_ships_size_sum)
 		end
 
-	make_custom_level (number_ships: INTEGER_64; a_gen: RANDOM_GENERATOR; size: INTEGER_64; max_shots: INTEGER_64; num_bombs:INTEGER_64)
+	make_custom_level (number_ships: INTEGER_64; a_gen: RANDOM_GENERATOR; size: INTEGER_64; max_shots: INTEGER_64; num_bombs: INTEGER_64; a_debug_mode: BOOLEAN)
 		do
+			debug_mode := a_debug_mode
 			board_size := size.as_integer_32
 
 			make_size (board_size)
-			create ship_list.make_ships_custom (False, a_gen, number_ships, size) -- new
+			create ship_list.make_ships_custom (a_debug_mode, a_gen, number_ships, size)
 			create player.make_costume (max_shots, num_bombs, number_ships, ship_list.total_ships_size_sum)
 		end
 

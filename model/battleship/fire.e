@@ -50,10 +50,6 @@ feature -- commands
 feature -- {NONE} helpers
 	fire
 		do
-			model.reset_game_message
-			model.set_s2 ("")
-			model.set_s1 ("Keep Firing!")
-
 			if not model.board.player.has_shots then
 				model.set_e ("No shots remaining")
 
@@ -76,6 +72,13 @@ feature -- {NONE} helpers
 				elseif model.board.fire_status (coordinate) = 2 then
 					model.set_s2 (model.board.ship_list.find_ship (coordinate).ship_size.out+"x1 ship sunk! ")
 				end
+				model.set_fired
+			end
+
+			if model.has_fired = True then
+				model.set_s1 ("Keep Firing!")
+			else
+				model.set_s1 ("Fire Away!")
 			end
 
 			model.check_game_status

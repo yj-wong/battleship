@@ -24,6 +24,11 @@ feature -- command
 			if model.game_started = False then
 				model.game_not_started_error
 			else
+				if model.history.no_prior_state then
+					model.history.extend_state (model.i)
+				else
+					model.history.extend_state (model.history.state.item + 1)
+				end
 				create op.make (model, coordinate)
 				model.history.extend_history (op)
 				op.execute

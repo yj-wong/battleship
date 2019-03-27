@@ -64,6 +64,11 @@ feature -- queries
 			Result := history_state.item
 		end
 
+	no_prior_state: BOOLEAN
+		do
+			Result := history_state.is_empty
+		end
+
 	out: STRING
 		do
 			create Result.make_empty
@@ -126,7 +131,7 @@ feature -- commands
 
 	extend_state (a_state: INTEGER)
 		do
-			remove_right
+			remove_right_state
 			history_state.extend (a_state)
 			history_state.finish
 		ensure
@@ -148,6 +153,6 @@ feature -- commands
 
 
 invariant
-	history_sync_with_state: history.index = history_state.index
-	history_same_count_with_state: history.count = history_state.count
+	history_sync_with_state: history.index <= history_state.index + 1
+	history_same_count_with_state: history.count <= history_state.count + 1
 end
