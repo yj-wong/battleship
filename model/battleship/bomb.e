@@ -21,8 +21,6 @@ feature -- constructors
 	make(a_model: ETF_MODEL; a_coordinate1: TUPLE[row: INTEGER_64; column: INTEGER_64]; a_coordinate2: TUPLE[row: INTEGER_64; column: INTEGER_64])
 		do
 				model := a_model
-				old_state := model.i - 1
-				new_state := model.i
 				e := model.e
 				s1 := model.s1
 				s2 := model.s2
@@ -40,14 +38,19 @@ feature -- commands
 	undo
 		do
 			restore_game_message
---			model.set_state_message (old_state)
-			unbomb
+			if
+				model.board.coordinate_status (coordinate1) = 2 and
+				model.board.coordinate_status (coordinate2) = 2 and
+				op_success = True
+			then
+				-- only unbomb if coordinates has been successfully fired
+				unbomb
+			end
 		end
 
 	redo
 		do
 			bomb
---			model.set_state_message (new_state)
 		end
 
 feature -- {NONE} helpers
@@ -89,11 +92,12 @@ feature -- {NONE} helpers
 					end
 				end
 				model.set_fired
+				op_success := True
 			end
 			if model.has_fired = True then
 				model.set_s1 ("Keep Firing!")
 			else
-				model.set_s1 ("Fire Away")
+				model.set_s1 ("Fire Away!")
 			end
 
 			model.check_game_status

@@ -20,8 +20,6 @@ feature -- constructors
 	make (a_model: ETF_MODEL; a_coordinate: TUPLE[row: INTEGER_64; column: INTEGER_64])
 		do
 			model := a_model
-			old_state := model.i - 1
-			new_state := model.i
 			e := model.e
 			s1 := model.s1
 			s2 := model.s2
@@ -38,13 +36,14 @@ feature -- commands
 	undo
 		do
 			restore_game_message
---			model.set_state_message (old_state)
-			unfire
+			if model.board.coordinate_status (coordinate) = 2 and op_success = True then
+				-- only unfire if coordinate has been successfully fired
+				unfire
+			end
 		end
 	redo
 		do
 			fire
---			model.set_state_message (new_state)
 		end
 
 feature -- {NONE} helpers
@@ -73,6 +72,7 @@ feature -- {NONE} helpers
 					model.set_s2 (model.board.ship_list.find_ship (coordinate).ship_size.out+"x1 ship sunk! ")
 				end
 				model.set_fired
+				op_success := True
 			end
 
 			if model.has_fired = True then

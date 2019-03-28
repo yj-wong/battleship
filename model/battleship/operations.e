@@ -9,7 +9,7 @@ deferred class
 
 feature -- attributes
 	model: ETF_MODEL
-	old_state, new_state: INTEGER
+	op_success: BOOLEAN -- if operation succesful, ie. the shot/bomb isn't invalid
 	e, s1, s2: STRING
 
 feature -- commands

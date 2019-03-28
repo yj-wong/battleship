@@ -20,10 +20,10 @@ feature{NONE} --constructors
 	make
 		do
 			create {ARRAYED_LIST[OPERATION]}history.make (10)
-			create {ARRAYED_LIST[INTEGER]}history_state.make (10)
+			create {ARRAYED_LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]}history_state.make (10)
 		end
 	history: LIST[OPERATION]
-	history_state: LIST[INTEGER]
+	history_state: LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]
 
 feature -- queries
 	item: OPERATION
@@ -38,12 +38,9 @@ feature -- queries
 			-- cursor points to a valid operation
 			-- cursor is not before or after
 		do
---			Result :=
---				not history.before and not history.after and
---				not history_state.before and not history_state.after
-
 			Result :=
-				not history.before and not history.after
+				not history.before and not history.after and
+				not history_state.before and not history_state.after
 		end
 
 
@@ -59,14 +56,18 @@ feature -- queries
 			Result := history.index = 0
 		end
 
-	state: INTEGER
+	old_state_item: INTEGER
 		do
-			Result := history_state.item
+			check attached {INTEGER} history_state.last.at (1) as os then
+				Result := os
+			end
 		end
 
-	no_prior_state: BOOLEAN
+	new_state_item: INTEGER
 		do
-			Result := history_state.is_empty
+			check attached {INTEGER} history_state.last.at (2) as ns then
+				Result := ns
+			end
 		end
 
 	out: STRING
@@ -77,6 +78,7 @@ feature -- queries
 				Result.append (op.item.output + " ")
 				Result.append ("%N")
 			end
+			Result.append ("index: " + " " + history.index.out + " " + history_state.index.out)
 			Result.append ("%N")
 			across history_state as s
 			loop
@@ -128,14 +130,27 @@ feature -- commands
 			history_state.back
 		end
 
-
-	extend_state (a_state: INTEGER)
+	extend_state (a_new_state: INTEGER)
+		local
+			old_state: INTEGER
 		do
+			if history_state.is_empty then
+				old_state := a_new_state - 1
+			elseif history_state.index = 0 then
+				check attached {INTEGER} history_state.first.at (1) as prev_old_state then
+					old_state := prev_old_state
+				end
+			else
+				check attached {INTEGER} history_state.last.at (2) as prev_new_state then
+					old_state := prev_new_state
+				end
+			end
+
 			remove_right_state
-			history_state.extend (a_state)
+			history_state.extend ([old_state, a_new_state])
 			history_state.finish
 		ensure
-			history_state_extended: history_state[history_state.count] = a_state
+--			history_state_extended: history_state[history_state.count] = [old_state, a_new_state]
 		end
 
 	remove_right_state

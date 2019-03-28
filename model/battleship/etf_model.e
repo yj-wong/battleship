@@ -284,7 +284,7 @@ feature -- queries
 				else
 					Result.append (details)
 				end
-				Result.append ("%N" + history.out)
+--				Result.append ("%N" + history.out)
 			end
 		end
 end
