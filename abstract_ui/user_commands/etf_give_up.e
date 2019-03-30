@@ -17,14 +17,12 @@ feature -- command
 			-- perform some update on the model state
 			model.default_update
 
-			-- new made by Joseph
 			if model.game_started = True then
 				model.give_up
 			else
-				model.game_not_started_error
+				model.game_message.game_not_started_error
 			end
-
---			model.save_state
+			
 			etf_cmd_container.on_change.notify ([Current])
     	end
 

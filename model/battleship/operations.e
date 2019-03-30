@@ -10,7 +10,8 @@ deferred class
 feature -- attributes
 	model: ETF_MODEL
 	op_success: BOOLEAN -- if operation succesful, ie. the shot/bomb isn't invalid
-	e, s1, s2: STRING
+	old_state, current_state: INTEGER
+--	e, s1, s2: STRING
 
 feature -- commands
 	execute
@@ -24,16 +25,22 @@ feature -- commands
 		end
 
 feature -- {NONE} helpers
-	restore_game_message
+	set_old_state (a_old_state: INTEGER)
 		do
-			model.reset_game_message
-			model.set_e (e)
-			model.set_s1 (s1)
-			model.set_s2 (s2)
+			old_state := a_old_state
+		end
+
+	update_state_message (a_state: INTEGER)
+		do
+			model.game_message.set_state_message (a_state)
 		end
 
 feature -- queries
 	output: STRING
 		deferred
 		end
+
+invariant
+--	current_state_greater_than_old_state: current_state > old_state
+--	operation_state_not_lesser_than_initial_state: old_state >= model.initial_i
 end

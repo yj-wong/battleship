@@ -23,9 +23,9 @@ feature -- command
 			create op.make (model, coordinate1, coordinate2)
 
 			if model.game_started = False then
-				model.game_not_started_error
+				model.game_message.game_not_started_error
 			else
-				model.history.extend_state (model.i)
+--				model.history.extend_state (model.i)
 				model.history.extend_history (op)
 				op.execute
 			end

@@ -19,21 +19,15 @@ create {ETF_MODEL_ACCESS}
 feature {NONE} -- Initialization
 	make
 		do
-			create e.make_from_string ("OK")
-			create s1.make_from_string ("Start a new game")
-			create s2.make_empty
-			create state_message.make_empty
+			create game_message.make
 			i := 0
 			create board.make_empty
 			create gen.make_debug
-			create history.make (0)
+			create history.make
 		end
 
 feature -- game_message
-	e: STRING
-	s1: STRING
-	s2: STRING
-	state_message: STRING
+	game_message: GAME_MESSAGE
 	i: INTEGER
 	initial_i: INTEGER
 
@@ -43,14 +37,11 @@ feature -- game_status
 	game_started: BOOLEAN
 	did_give_up: BOOLEAN -- status if user did give up before
 	game_iteration_before: INTEGER
-	has_fired: BOOLEAN
 
 feature -- score_keeping
 	grand_total_score: INTEGER
 	cumulative_score: INTEGER
-
-	-- new made by Joseph
-	prev_grand_total_score:INTEGER -- save prev grand_total_score
+	prev_grand_total_score: INTEGER -- save prev grand_total_score
 
 feature -- game_objects
 	board: BOARD
@@ -58,49 +49,10 @@ feature -- game_objects
 	history: HISTORY
 
 feature -- model updates
-	set_e (message: STRING)
-		do
-			e:= message
-		end
-
-	set_s1 (message: STRING)
-		do
-			s1:= message
-		end
-
-	set_s2 (message: STRING)
-		do
-			s2 := message
-		end
-
-	set_state_message (state: INTEGER)
-		do
---			-- clear state message if state is -1
-
---			if state = -1 then
---				state_message := ""
---			end
---			
-			state_message := "(= state " + state.out + ") "
-		end
-
-	reset_game_message
-		do
-			create e.make_empty
-			create s1.make_empty
-			create s2.make_empty
-			create state_message.make_empty
-		end
-
 	default_update
 			-- Perform update to the model state.
 		do
 			i := i + 1
-		end
-
-	set_fired
-		do
-			has_fired := True
 		end
 
 feature -- model operations
@@ -108,11 +60,11 @@ feature -- model operations
 			-- Reset model state.
 		do
 			game_iteration := 0
-			has_fired := False
 			grand_total_score := 0
 			cumulative_score := 0
+			create game_message.make
 			create board.make_empty
-			create history.make (0)
+			create history.make
 			create gen.make_debug
 		end
 
@@ -124,22 +76,16 @@ feature -- model operations
 			game_iteration := game_iteration + 1
 			initial_i := i
 			game_started := True
-			has_fired := False
 
-			create history.make (initial_i)
-
-			e := "OK"
-			s2 := ""
-			s1 := "Fire Away!"
+			create history.make
+			game_message.new_game
 
 			cumulative_score := cumulative_score + board.player.score
 		end
 
 	give_up
 		do
-			e := "OK"
-			s2 := ""
-			s1 := "You gave up!"
+			game_message.give_up
 			did_give_up:= True
 			game_started := False
 		end
@@ -166,33 +112,19 @@ feature -- model operations
 				grand_total_score := grand_total_score + board.player.total_score
 
 			elseif dimension <= ships then
-				e := "Too many ships"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.too_many_ships
 			elseif ships > 7 then
-				e := "Too many ships"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.too_many_ships
 			elseif ships < 1 then
-				e := "Not enough ships"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.not_enough_ships
 			elseif max_shots > 144 then
-				e := "Too many shots"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.too_many_shots
 			elseif max_shots < 1 then
-				e := "Not enough shots"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.not_enough_shots
 			elseif num_bombs > 7 then
-				e := "Too many bombs"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.too_many_bombs
 			elseif num_bombs < 1 then
-				e := "Not enough bombs"
-				s2 := ""
-				s1 := "Start a new game"
+				game_message.not_enough_bombs
 			end
 		end
 
@@ -210,32 +142,14 @@ feature -- model operations
 		end
 
 feature --utilities
-	game_started_error
-		do
-			set_e ("Game already started")
-			if has_fired = True then
-				set_s1 ("Keep Firing!")
-			else
-				set_s1 ("Fire Away!")
-			end
-			s2 := ""
-		end
-
-	game_not_started_error
-		do
-			e := "Game not started"
-			s1 := "Start a new game"
-			s2 := ""
-		end
-
 	check_game_status
 		do
 			if board.ship_list.unsunken_ships = 0 then
 				game_started := False
-				s1 := "You Win!"
+				game_message.game_win
 			elseif not board.player.has_shots and not board.player.has_bombs then
 				game_started := False
-				s1 := "Game Over!"
+				game_message.game_over
 			end
 		end
 
@@ -286,9 +200,7 @@ feature -- queries
 		do
 			create Result.make_empty
 			Result.append ("  state " + i.out + " ")
-			Result.append (state_message)
-
-			Result.append (e + " -> " + s2 + s1)
+			Result.append (game_message.get_game_message)
 
 			if i > 0 and board.board_size > 0 then
 				Result.append (board.out)

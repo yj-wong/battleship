@@ -17,22 +17,20 @@ feature -- constructors
 	make (a_model: ETF_MODEL)
 		do
 			model := a_model
-			e := model.e
-			s1 := model.s1
-			s2 := model.s2
-		ensure
-			e = model.e
+--			e := model.e
+--			s1 := model.s1
+--			s2 := model.s2
 		end
 
 feature -- commands
 	execute
 		do
-			model.game_started_error
+			model.game_message.game_started_error
 		end
 
 	undo
 		do
-			restore_game_message
+--			restore_game_message
 		end
 
 	redo

@@ -19,64 +19,70 @@ create
 feature {NONE} -- attributes
 	history: LIST[OPERATION]
 	history_state: LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]
-	first_state: INTEGER
 
 feature{NONE} --constructors
-	make (a_first_state: INTEGER)
+	make
 		do
 			create {ARRAYED_LIST[OPERATION]}history.make (10)
 			create {ARRAYED_LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]}history_state.make (10)
-			first_state := a_first_state
+		end
+
+feature -- commands
+	undo
+		do
+			if history.after then
+				history.back
+			end
+
+			if on_item then
+				item.undo
+				history.back
+			end
+
+			if history.index > 1 then
+				old_item.undo
+				old_item.redo
+			end
+		end
+
+	redo
+		do
+			if history.before or not history.after then
+				history.forth
+			end
+
+			if on_item then
+				item.redo
+				history.forth
+			end
+		end
+
+	extend_history (a_op: OPERATION)
+			-- remove all operations to the right of the current
+			-- cursor in history, then extend with `a_op'
+		do
+			remove_right
+			history.extend(a_op)
+			history.finish
+
+			if history.is_empty or history.index = 1 then
+				item.set_old_state (item.model.initial_i)
+			elseif history.index > 1 then
+				item.set_old_state (old_item.current_state)
+			end
+		ensure
+			history_extended: history[history.count] = a_op
 		end
 
 feature -- queries
-	old_item: OPERATION
+	can_undo: BOOLEAN
 		do
-			Result := history.at (history.index - 1)
+			Result := not before
 		end
 
-	item: OPERATION
-			-- Cursor points to this user operation
-		require
-			on_item
+	can_redo: BOOLEAN
 		do
-			Result := history.item
-		end
-
-	on_item: BOOLEAN
-			-- cursor points to a valid operation
-			-- cursor is not before or after
-		do
-			Result :=
-				not history.before and not history.after and
-				not history_state.before and not history_state.after
-		end
-
-
-	after: BOOLEAN
-			-- Is there no valid cursor position to the right of cursor?
-		do
-			Result := history.index = history.count + 1
-		end
-
-	before: BOOLEAN
-			-- Is there no valid cursor position to the left of cursor?
-		do
-			Result := history.index = 0
-		end
-
-	old_state_item: INTEGER
-		do
-			check attached {INTEGER} history_state.item.at (1) as os then
-				Result := os
-			end
-		end
-
-	new_state_item: INTEGER
-		do
-			check attached {INTEGER} history_state.item.at (2) as ns then
-				Result := ns
-			end
+			Result := not after
 		end
 
 	out: STRING
@@ -85,28 +91,18 @@ feature -- queries
 			across history as op
 			loop
 				Result.append (op.item.output + " ")
+				Result.append ("old: " + op.item.old_state.out + " ")
+				Result.append ("current: " + op.item.current_state.out + " ")
 				Result.append ("%N")
 			end
-			Result.append ("index: " + " " + history.index.out + " " + history_state.index.out)
+			Result.append ("index: " + " " + history.index.out)
+--			Result.append (" " + history_state.index.out)
 			Result.append ("%N")
-			across history_state as s
-			loop
-				Result.append ("state: " + s.item.out + " ")
-			end
+
 		end
 
-feature -- commands
-	extend_history (a_op: OPERATION)
-			-- remove all operations to the right of the current
-			-- cursor in history, then extend with `a_op'
-		do
-			remove_right
-			history.extend(a_op)
-			history.finish
-		ensure
-			history_extended: history[history.count] = a_op
-		end
 
+feature {NONE} -- helper commands
 	remove_right
 			--remove all elements
 			-- to the right of the current cursor in history
@@ -139,44 +135,94 @@ feature -- commands
 			history_state.back
 		end
 
-	extend_state (a_new_state: INTEGER)
-		local
-			old_state: INTEGER
-		do
-			if history_state.is_empty then
-				old_state := first_state
-			elseif history_state.index = 0 then
-				check attached {INTEGER} history_state.first.at (1) as prev_old_state then
-					old_state := prev_old_state
-				end
-			else
-				check attached {INTEGER} history_state.last.at (2) as prev_new_state then
-					old_state := prev_new_state
-				end
-			end
+--	extend_state (a_new_state: INTEGER)
+--		local
+--			old_state: INTEGER
+--		do
+--			if history_state.is_empty then
+--				old_state := first_state
+--			elseif history_state.index = 0 then
+--				check attached {INTEGER} history_state.first.at (1) as prev_old_state then
+--					old_state := prev_old_state
+--				end
+--			else
+--				check attached {INTEGER} history_state.last.at (2) as prev_new_state then
+--					old_state := prev_new_state
+--				end
+--			end
 
-			remove_right_state
-			history_state.extend ([old_state, a_new_state])
-			history_state.finish
-		ensure
---			history_state_extended: history_state[history_state.count] = [old_state, a_new_state]
+--			remove_right_state
+--			history_state.extend ([old_state, a_new_state])
+--			history_state.finish
+--		ensure
+----			history_state_extended: history_state[history_state.count] = [old_state, a_new_state]
+--		end
+
+--	remove_right_state
+--		do
+--			if not history_state.islast and not history_state.after then
+--				from
+--					history_state.forth
+--				until
+--					history_state.after
+--				loop
+--					history_state.remove
+--				end
+--			end
+--		end
+
+feature {NONE} -- helper queries
+	old_item: OPERATION
+		require
+			history.index > 1
+		do
+			Result := history.at (history.index - 1)
 		end
 
-	remove_right_state
+	item: OPERATION
+			-- Cursor points to this user operation
+		require
+			on_item
 		do
-			if not history_state.islast and not history_state.after then
-				from
-					history_state.forth
-				until
-					history_state.after
-				loop
-					history_state.remove
-				end
-			end
+			Result := history.item
+		end
+
+	on_item: BOOLEAN
+			-- cursor points to a valid operation
+			-- cursor is not before or after
+		do
+			Result :=
+				not history.before and not history.after
 		end
 
 
-invariant
-	history_sync_with_state: history.index <= history_state.index + 1
-	history_same_count_with_state: history.count <= history_state.count + 1
+	after: BOOLEAN
+			-- Is there no valid cursor position to the right of cursor?
+		do
+			Result := history.index = history.count + 1
+		end
+
+	before: BOOLEAN
+			-- Is there no valid cursor position to the left of cursor?
+		do
+			Result := history.index = 0
+		end
+
+	old_state_item: INTEGER
+		do
+			check attached {INTEGER} history_state.item.at (1) as os then
+				Result := os
+			end
+		end
+
+	state_item: INTEGER
+		do
+			check attached {INTEGER} history_state.item.at (2) as ns then
+				Result := ns
+			end
+		end
+
+--invariant
+--	history_sync_with_state: history.index <= history_state.index + 1
+--	history_same_count_with_state: history.count <= history_state.count + 1
 end
