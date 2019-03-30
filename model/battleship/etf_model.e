@@ -18,7 +18,6 @@ create {ETF_MODEL_ACCESS}
 
 feature {NONE} -- Initialization
 	make
-			-- Initialization for `Current'.
 		do
 			create e.make_from_string ("OK")
 			create s1.make_from_string ("Start a new game")
@@ -27,15 +26,16 @@ feature {NONE} -- Initialization
 			i := 0
 			create board.make_empty
 			create gen.make_debug
-			create history.make
+			create history.make (0)
 		end
 
 feature -- game_message
 	e: STRING
 	s1: STRING
 	s2: STRING
-	i: INTEGER
 	state_message: STRING
+	i: INTEGER
+	initial_i: INTEGER
 
 feature -- game_status
 	debug_mode: BOOLEAN
@@ -112,8 +112,27 @@ feature -- model operations
 			grand_total_score := 0
 			cumulative_score := 0
 			create board.make_empty
-			create history.make
+			create history.make (0)
 			create gen.make_debug
+		end
+
+	soft_reset (a_debug_mode: BOOLEAN)
+			-- Reset for new game.
+		do
+			check_if_user_did_give_up
+			debug_mode := a_debug_mode
+			game_iteration := game_iteration + 1
+			initial_i := i
+			game_started := True
+			has_fired := False
+
+			create history.make (initial_i)
+
+			e := "OK"
+			s2 := ""
+			s1 := "Fire Away!"
+
+			cumulative_score := cumulative_score + board.player.score
 		end
 
 	give_up
@@ -125,20 +144,18 @@ feature -- model operations
 			game_started := False
 		end
 
-	-- new made by Joseph (underconstruction)
 	custom_setup(dimension: INTEGER_64 ; ships: INTEGER_64 ; max_shots: INTEGER_64 ; num_bombs: INTEGER_64; a_debug_mode: BOOLEAN)
 		do
-			if dimension > ships and ships <= 7 and ships >=1 and max_shots <= 144 and max_shots >= 1 and num_bombs <= 7 and num_bombs >= 1 then
-				create history.make
-				check_if_user_did_give_up
-				debug_mode := a_debug_mode
-				game_iteration := game_iteration + 1
-				game_started := True
-				e := "OK"
-				s2 := ""
-				s1 := "Fire Away!"
-
-				cumulative_score := cumulative_score + board.player.score
+			if
+				((dimension // 3) <= ships) and
+				(ships <= (dimension // 2) + 1) and
+				((2 * dimension) <= max_shots) and
+				max_shots <= 144 and
+				max_shots >= 1 and
+				num_bombs <= 7 and
+				num_bombs >= 1
+			then
+				soft_reset (a_debug_mode)
 
 				board.make_custom_level (ships, gen, dimension, max_shots, num_bombs, debug_mode)
 
@@ -147,6 +164,7 @@ feature -- model operations
 				end
 
 				grand_total_score := grand_total_score + board.player.total_score
+
 			elseif dimension <= ships then
 				e := "Too many ships"
 				s2 := ""
@@ -180,17 +198,7 @@ feature -- model operations
 
 	new_game (a_debug_mode: BOOLEAN; a_level: INTEGER_64)
 		do
-			-- new made by Joseph
-			create history.make
-			check_if_user_did_give_up
-
-			debug_mode := a_debug_mode
-			game_iteration := game_iteration + 1
-			game_started := True
-			e := "OK"
-			s2 := ""
-			s1 := "Fire Away!"
-			cumulative_score := cumulative_score + board.player.score
+			soft_reset (a_debug_mode)
 
 			board.make_level (a_level, a_debug_mode, gen)
 
@@ -204,7 +212,12 @@ feature -- model operations
 feature --utilities
 	game_started_error
 		do
-			e := "Game already started"
+			set_e ("Game already started")
+			if has_fired = True then
+				set_s1 ("Keep Firing!")
+			else
+				set_s1 ("Fire Away!")
+			end
 			s2 := ""
 		end
 
@@ -274,6 +287,7 @@ feature -- queries
 			create Result.make_empty
 			Result.append ("  state " + i.out + " ")
 			Result.append (state_message)
+
 			Result.append (e + " -> " + s2 + s1)
 
 			if i > 0 and board.board_size > 0 then
@@ -284,7 +298,7 @@ feature -- queries
 				else
 					Result.append (details)
 				end
---				Result.append ("%N" + history.out)
+				Result.append ("%N" + history.out)
 			end
 		end
 end

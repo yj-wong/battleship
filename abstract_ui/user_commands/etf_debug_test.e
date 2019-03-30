@@ -16,22 +16,24 @@ feature -- command
 		require else
 			debug_test_precond(level)
 		local
-			op: OPERATION
+			op: OTHER_OP
     	do
 			-- perform some update on the model state
 			model.default_update
 
-			if model.game_started = True then
+			if model.game_started then
+				model.history.extend_state (model.i)
+				create op.make (model)
+				model.history.extend_history (op)
+
 				model.game_started_error
 			else
 				if model.game_iteration > 0 and model.debug_mode = False then
 					model.reset
 				end
 				model.new_game(True, level)
---				model.history.extend_history (op)
 			end
 
---			model.save_state
 			etf_cmd_container.on_change.notify ([Current])
     	end
 

@@ -28,14 +28,16 @@ feature -- command
 				model.set_state_message (model.history.new_state_item)
 			elseif model.game_started = False then
 				model.reset_game_message
-				model.e.append ("Nothing to redo")
-				model.s1.append ("")
-				model.s2.append ("Start a new game")
+				model.set_e ("Nothing to redo")
+				model.set_s2 ("Start a new game")
 			else
 				model.reset_game_message
-				model.e.append ("Nothing to redo")
-				model.s1.append ("")
-				model.s2.append ("Fire Away!")
+				model.set_e ("Nothing to redo")
+				if model.has_fired = True then
+					model.set_s1 ("Keep Firing!")
+				else
+					model.set_s1 ("Fire Away!")
+				end
 			end
 			model.default_update
 			etf_cmd_container.on_change.notify ([Current])

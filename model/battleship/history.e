@@ -16,16 +16,25 @@ inherit
 create
 	make
 
+feature {NONE} -- attributes
+	history: LIST[OPERATION]
+	history_state: LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]
+	first_state: INTEGER
+
 feature{NONE} --constructors
-	make
+	make (a_first_state: INTEGER)
 		do
 			create {ARRAYED_LIST[OPERATION]}history.make (10)
 			create {ARRAYED_LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]}history_state.make (10)
+			first_state := a_first_state
 		end
-	history: LIST[OPERATION]
-	history_state: LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]
 
 feature -- queries
+	old_item: OPERATION
+		do
+			Result := history.at (history.index - 1)
+		end
+
 	item: OPERATION
 			-- Cursor points to this user operation
 		require
@@ -58,14 +67,14 @@ feature -- queries
 
 	old_state_item: INTEGER
 		do
-			check attached {INTEGER} history_state.last.at (1) as os then
+			check attached {INTEGER} history_state.item.at (1) as os then
 				Result := os
 			end
 		end
 
 	new_state_item: INTEGER
 		do
-			check attached {INTEGER} history_state.last.at (2) as ns then
+			check attached {INTEGER} history_state.item.at (2) as ns then
 				Result := ns
 			end
 		end
@@ -135,7 +144,7 @@ feature -- commands
 			old_state: INTEGER
 		do
 			if history_state.is_empty then
-				old_state := a_new_state - 1
+				old_state := first_state
 			elseif history_state.index = 0 then
 				check attached {INTEGER} history_state.first.at (1) as prev_old_state then
 					old_state := prev_old_state

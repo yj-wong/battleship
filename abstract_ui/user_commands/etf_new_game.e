@@ -15,11 +15,17 @@ feature -- command
 	new_game(level: INTEGER_64)
 		require else
 			new_game_precond(level)
+		local
+			op: OTHER_OP
     	do
 			-- perform some update on the model state
 			model.default_update
 
-			if model.game_started = True then
+			if model.game_started then
+				create op.make (model)
+				model.history.extend_state (model.i)
+				model.history.extend_history (op)
+				
 				model.game_started_error
 			else
 				if model.game_iteration > 0 and model.debug_mode = True then
@@ -28,7 +34,6 @@ feature -- command
 				model.new_game(False, level)
 			end
 
---			model.save_state
 			etf_cmd_container.on_change.notify ([Current])
     	end
 

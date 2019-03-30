@@ -35,7 +35,7 @@ feature -- commands
 
 	undo
 		do
-			restore_game_message
+			
 			if model.board.coordinate_status (coordinate) = 2 and op_success = True then
 				-- only unfire if coordinate has been successfully fired
 				unfire
