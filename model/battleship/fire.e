@@ -40,7 +40,8 @@ feature -- commands
 				-- only unfire if coordinate has been successfully fired
 				unfire
 			end
-			model.game_message.new_game
+			--default update
+			model.game_message.reset_game_message
 			update_state_message (old_state)
 		end
 

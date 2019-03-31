@@ -24,7 +24,7 @@ feature -- commands
 		deferred
 		end
 
-feature -- {NONE} helpers
+feature -- helpers
 	set_old_state (a_old_state: INTEGER)
 		do
 			old_state := a_old_state

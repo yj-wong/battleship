@@ -64,10 +64,14 @@ feature --queries
 		end
 
 	out: STRING
+		local
+			fi: FORMAT_INTEGER
 		do
+			create fi.make (2)
 			create Result.make_from_string ("[")
-			Result.append (row_to_alphabet.out+", ")
-			Result.append (col.out+"]")
+			Result.append (row_to_alphabet.out+",")
+			Result.append (fi.formatted(col))
+			Result.append ("]")
 		end
 
 invariant

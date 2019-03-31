@@ -37,9 +37,13 @@ feature -- commands
 			if on_item then
 				item.undo
 
+				-- restore old message
 				if history.index > 1 then
 					old_item.undo
 					old_item.redo
+				else
+					item.model.game_message.new_game
+					item.model.game_message.set_state_message (item.model.initial_i)
 				end
 
 				history.back

@@ -16,6 +16,7 @@ feature {NONE} -- attributes
 	fire_status: STRING
 	game_status: STRING
 	has_fired: BOOLEAN
+	debug_output: STRING
 
 feature -- constructor
 	make
@@ -24,6 +25,7 @@ feature -- constructor
 			create game_status.make_from_string ("Start a new game")
 			create fire_status.make_empty
 			create state_message.make_empty
+			create debug_output.make_empty
 			has_fired := False
 		end
 
@@ -33,7 +35,34 @@ feature -- commands
 			has_fired := True
 		end
 
-feature -- set_message
+	set_state_message (a_state: INTEGER)
+		do
+			state_message := "(= state " + a_state.out + ") "
+		end
+
+	reset_game_message
+		do
+			clear_game_message
+			set_error ("OK")
+			set_fire_status ("")
+			reset_game_status
+		end
+
+	reset_game_status
+		do
+			if has_fired then
+				set_game_status ("Keep Firing!")
+			else
+				set_game_status ("Fire Away!")
+			end
+		end
+
+	set_debug_output (message: STRING)
+		do
+			debug_output := "%N" + message
+		end
+
+feature {NONE} -- helper commands
 	set_error (message: STRING)
 		do
 			error:= message
@@ -49,34 +78,13 @@ feature -- set_message
 			fire_status := message
 		end
 
-	set_state_message (a_state: INTEGER)
-		do
-			state_message := "(= state " + a_state.out + ") "
-		end
-
-	reset_game_message
-		do
-			set_error ("OK")
-			set_fire_status ("")
-			reset_game_status
-			create state_message.make_empty
-		end
-
-	reset_game_status
-		do
-			if has_fired then
-				set_game_status ("Keep Firing!")
-			else
-				set_game_status ("Fire Away!")
-			end
-		end
-
 	clear_game_message
 		do
 			create error.make_empty
 			create game_status.make_empty
 			create fire_status.make_empty
 			create state_message.make_empty
+			create debug_output.make_empty
 		end
 
 feature -- game_start_messages
@@ -238,6 +246,7 @@ feature -- queries
 			Result.append (" -> ")
 			Result.append (fire_status)
 			Result.append (game_status)
+			Result.append (debug_output)
 		end
 
 end

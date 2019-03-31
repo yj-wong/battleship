@@ -45,7 +45,7 @@ feature -- commands
 			then
 				-- only unbomb if coordinates has been successfully fired
 				unbomb
-				model.game_message.new_game
+				model.game_message.reset_game_message
 				update_state_message (old_state)
 			end
 		end
@@ -97,7 +97,7 @@ feature {NONE} -- helpers
 
 				elseif model.board.fire_status (coordinate1) = 1 or model.board.fire_status (coordinate2) = 1 then
 					model.game_message.ship_hit
-					
+
 				end
 				model.game_message.set_has_fired
 				op_success := True
