@@ -90,20 +90,26 @@ feature -- model operations
 			game_started := False
 		end
 
-	custom_setup(dimension: INTEGER_64 ; ships: INTEGER_64 ; max_shots: INTEGER_64 ; num_bombs: INTEGER_64; a_debug_mode: BOOLEAN)
+	custom_setup(a_board_size: INTEGER_64; a_ship_num: INTEGER_64 ; a_max_shots: INTEGER_64; a_max_bombs: INTEGER_64; a_debug_mode: BOOLEAN)
+		local
+			csh: CUSTOM_SETUP_HELPER
 		do
+			create csh.make (Current, a_board_size, a_ship_num, a_max_shots, a_max_bombs, a_debug_mode)
+
 			if
-				((dimension // 3) <= ships) and
-				(ships <= (dimension // 2) + 1) and
-				((2 * dimension) <= max_shots) and
-				max_shots <= 144 and
-				max_shots >= 1 and
-				num_bombs <= 7 and
-				num_bombs >= 1
+----				((a_board_size // 3) <= ships) and
+----				(ships <= (a_board_size // 2) + 1) and
+----				((2 * a_board_size) <= max_shots) and
+----				max_shots <= 144 and
+----				max_shots >= 1 and
+----				num_bombs <= 7 and
+----				num_bombs >= 1
+
+					csh.valid_setup
 			then
 				soft_reset (a_debug_mode)
 
-				board.make_custom_level (ships, gen, dimension, max_shots, num_bombs, debug_mode)
+				board.make_custom_level (a_ship_num, gen, a_board_size, a_max_shots, a_max_bombs, a_debug_mode)
 
 				if debug_mode = True then
 					board.show_ships
@@ -111,20 +117,23 @@ feature -- model operations
 
 				grand_total_score := grand_total_score + board.player.total_score
 
-			elseif dimension <= ships then
-				game_message.too_many_ships
-			elseif ships > 7 then
-				game_message.too_many_ships
-			elseif ships < 1 then
-				game_message.not_enough_ships
-			elseif max_shots > 144 then
-				game_message.too_many_shots
-			elseif max_shots < 1 then
-				game_message.not_enough_shots
-			elseif num_bombs > 7 then
-				game_message.too_many_bombs
-			elseif num_bombs < 1 then
-				game_message.not_enough_bombs
+			else
+				csh.set_message
+
+--			elseif dimension <= ships then
+--				game_message.too_many_ships
+--			elseif ships > 7 then
+--				game_message.too_many_ships
+--			elseif ships < 1 then
+--				game_message.not_enough_ships
+--			elseif max_shots > 144 then
+--				game_message.too_many_shots
+--			elseif max_shots < 1 then
+--				game_message.not_enough_shots
+--			elseif num_bombs > 7 then
+--				game_message.too_many_bombs
+--			elseif num_bombs < 1 then
+--				game_message.not_enough_bombs
 			end
 		end
 
