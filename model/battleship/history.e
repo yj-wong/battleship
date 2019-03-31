@@ -30,30 +30,30 @@ feature{NONE} --constructors
 feature -- commands
 	undo
 		do
-			if history.after then
+			if after then
 				history.back
 			end
 
 			if on_item then
 				item.undo
-				history.back
-			end
 
-			if history.index > 1 then
-				old_item.undo
-				old_item.redo
+				if history.index > 1 then
+					old_item.undo
+					old_item.redo
+				end
+
+				history.back
 			end
 		end
 
 	redo
 		do
-			if history.before or not history.after then
+			if before or not after then
 				history.forth
 			end
 
 			if on_item then
 				item.redo
-				history.forth
 			end
 		end
 
@@ -82,7 +82,7 @@ feature -- queries
 
 	can_redo: BOOLEAN
 		do
-			Result := not after
+			Result := history.index < history.count
 		end
 
 	out: STRING
@@ -95,7 +95,8 @@ feature -- queries
 				Result.append ("current: " + op.item.current_state.out + " ")
 				Result.append ("%N")
 			end
-			Result.append ("index: " + " " + history.index.out)
+			Result.append ("index: " + " " + history.index.out + " ")
+			Result.append ("count: " + history.count.out)
 --			Result.append (" " + history_state.index.out)
 			Result.append ("%N")
 
@@ -135,41 +136,6 @@ feature {NONE} -- helper commands
 			history_state.back
 		end
 
---	extend_state (a_new_state: INTEGER)
---		local
---			old_state: INTEGER
---		do
---			if history_state.is_empty then
---				old_state := first_state
---			elseif history_state.index = 0 then
---				check attached {INTEGER} history_state.first.at (1) as prev_old_state then
---					old_state := prev_old_state
---				end
---			else
---				check attached {INTEGER} history_state.last.at (2) as prev_new_state then
---					old_state := prev_new_state
---				end
---			end
-
---			remove_right_state
---			history_state.extend ([old_state, a_new_state])
---			history_state.finish
---		ensure
-----			history_state_extended: history_state[history_state.count] = [old_state, a_new_state]
---		end
-
---	remove_right_state
---		do
---			if not history_state.islast and not history_state.after then
---				from
---					history_state.forth
---				until
---					history_state.after
---				loop
---					history_state.remove
---				end
---			end
---		end
 
 feature {NONE} -- helper queries
 	old_item: OPERATION

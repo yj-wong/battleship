@@ -41,6 +41,5 @@ feature -- queries
 		end
 
 invariant
---	current_state_greater_than_old_state: current_state > old_state
---	operation_state_not_lesser_than_initial_state: old_state >= model.initial_i
+	current_state_greater_than_old_state: current_state > old_state
 end

@@ -22,10 +22,8 @@ feature -- command
 			model.default_update
 
 			if model.game_started then
---				model.history.extend_state (model.i)
 				create op.make (model)
 				model.history.extend_history (op)
-
 				model.game_message.game_started_error
 			else
 				if model.game_iteration > 0 and model.debug_mode = False then

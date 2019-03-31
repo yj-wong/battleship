@@ -33,13 +33,11 @@ feature -- constructors
 feature -- commands
 	execute
 		do
---			model.reset_game_message
 			bomb
 		end
 
 	undo
 		do
---			restore_game_message
 			if
 				model.board.coordinate_status (coordinate1) = 2 and
 				model.board.coordinate_status (coordinate2) = 2 and
@@ -54,7 +52,7 @@ feature -- commands
 
 	redo
 		do
-			bomb
+			execute
 			update_state_message (current_state)
 		end
 
@@ -83,9 +81,6 @@ feature {NONE} -- helpers
 				if model.board.fire_status (coordinate1) = 0 and model.board.fire_status (coordinate2) = 0 then
 					model.game_message.ship_miss
 
-				elseif model.board.fire_status (coordinate1) = 1 or model.board.fire_status (coordinate2) = 1 then
-					model.game_message.ship_hit
-
 				elseif model.board.fire_status (coordinate1) = 2 and model.board.fire_status (coordinate2) /= 2 then
 					model.game_message.ship_sunk (model.board.ship_list.find_ship (coordinate1).ship_size)
 
@@ -99,6 +94,10 @@ feature {NONE} -- helpers
 						model.game_message.double_ship_sunk (model.board.ship_list.find_ship (coordinate1).ship_size,
 							model.board.ship_list.find_ship (coordinate2).ship_size)
 					end
+
+				elseif model.board.fire_status (coordinate1) = 1 or model.board.fire_status (coordinate2) = 1 then
+					model.game_message.ship_hit
+					
 				end
 				model.game_message.set_has_fired
 				op_success := True

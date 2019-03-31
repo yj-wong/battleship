@@ -17,9 +17,11 @@ feature -- constructors
 	make (a_model: ETF_MODEL)
 		do
 			model := a_model
---			e := model.e
---			s1 := model.s1
---			s2 := model.s2
+			if model.i = model.initial_i + 1 then
+				-- If this is the first operation after game start
+				old_state := model.initial_i
+			end
+			current_state := model.i
 		end
 
 feature -- commands
@@ -30,12 +32,14 @@ feature -- commands
 
 	undo
 		do
---			restore_game_message
+			model.game_message.new_game
+			update_state_message (old_state)
 		end
 
 	redo
 		do
 			execute
+			update_state_message (current_state)
 		end
 
 feature -- queries
