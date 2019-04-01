@@ -160,6 +160,11 @@ feature -- custom_setup_messages
 			set_error ("Not enough bombs")
 		end
 
+	start_new_game
+		do
+			set_game_status ("Start a new game")
+		end
+
 feature -- fire_bomb_errors
 	no_shots
 		do

@@ -11,7 +11,6 @@ feature -- attributes
 	model: ETF_MODEL
 	op_success: BOOLEAN -- if operation succesful, ie. the shot/bomb isn't invalid
 	old_state, current_state: INTEGER
---	e, s1, s2: STRING
 
 feature -- commands
 	execute

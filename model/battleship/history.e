@@ -18,13 +18,11 @@ create
 
 feature {NONE} -- attributes
 	history: LIST[OPERATION]
-	history_state: LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]
 
 feature{NONE} --constructors
 	make
 		do
 			create {ARRAYED_LIST[OPERATION]}history.make (10)
-			create {ARRAYED_LIST[TUPLE[old_state: INTEGER; new_state: INTEGER]]}history_state.make (10)
 		end
 
 feature -- commands
@@ -39,6 +37,10 @@ feature -- commands
 
 				-- restore old message
 				if history.index > 1 then
+					if history.index = 2 then
+						item.model.game_message.new_game
+					end
+
 					old_item.undo
 					old_item.redo
 				else
@@ -129,7 +131,6 @@ feature {NONE} -- helper commands
 			not after
 		do
 			history.forth
-			history_state.forth
 		end
 
 	back
@@ -137,7 +138,6 @@ feature {NONE} -- helper commands
 			not before
 		do
 			history.back
-			history_state.back
 		end
 
 
@@ -177,22 +177,4 @@ feature {NONE} -- helper queries
 		do
 			Result := history.index = 0
 		end
-
-	old_state_item: INTEGER
-		do
-			check attached {INTEGER} history_state.item.at (1) as os then
-				Result := os
-			end
-		end
-
-	state_item: INTEGER
-		do
-			check attached {INTEGER} history_state.item.at (2) as ns then
-				Result := ns
-			end
-		end
-
---invariant
---	history_sync_with_state: history.index <= history_state.index + 1
---	history_same_count_with_state: history.count <= history_state.count + 1
 end

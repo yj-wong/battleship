@@ -47,6 +47,7 @@ feature -- commands
 			elseif not_enough_bombs then
 				model.game_message.not_enough_bombs
 			end
+			model.game_message.start_new_game
 		end
 
 feature -- queries
@@ -78,12 +79,8 @@ feature {NONE} -- helper queries
 
 	not_enough_shots: BOOLEAN
 		local
-			min_shot_condition: INTEGER
 		do
-			across 1 |..| board_size.as_integer_32 as i loop
-				min_shot_condition := min_shot_condition + i.item
-			end
-			Result := not (max_shots >= 1)
+			Result := not (max_shots >= (ship_num * (ship_num + 1) // 2) and max_shots >= 1)
 		end
 
 	too_many_bombs: BOOLEAN
